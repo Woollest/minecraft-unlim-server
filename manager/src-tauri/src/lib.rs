@@ -1,11 +1,25 @@
 use serde_json::Value;
 use std::process::Command;
 
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
+
+#[cfg(target_os = "windows")]
+const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+
 const ACTIONS: &[&str] = &["status", "start", "stop", "restart", "backup", "logs", "players", "unlim-start", "unlim-stop", "unlim-share"];
 
 fn call_host(host: &str, action: &str) -> Result<Value, String> {
-    let output = Command::new("ssh")
-        .args(["-o", "BatchMode=yes", "-o", "ConnectTimeout=8", &format!("woollest@{host}"), "/home/woollest/minecraft/wsm-agent", action])
+    let mut command = Command::new("ssh");
+    command.args(["-o", "BatchMode=yes", "-o", "ConnectTimeout=8", &format!("woollest@{host}"), "/home/woollest/minecraft/wsm-agent", action]);
+
+    // Windows creates a visible console for command-line child processes by
+    // default. Status polling runs every 15 seconds, so always start SSH
+    // without a console window to avoid stealing focus from the current app.
+    #[cfg(target_os = "windows")]
+    command.creation_flags(CREATE_NO_WINDOW);
+
+    let output = command
         .output()
         .map_err(|error| format!("SSHを起動できません: {error}"))?;
     let stdout = String::from_utf8_lossy(&output.stdout).trim().to_owned();
