@@ -1,0 +1,11 @@
+[Unit]
+Description=Minecraft and Unlim maintenance check
+After=network-online.target unlim-daemon.service
+
+[Service]
+Type=oneshot
+Environment=WSM_MC_DIR=%h/minecraft
+ExecStart=%h/minecraft/wsm-ops
+
+[Install]
+WantedBy=default.target

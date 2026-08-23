@@ -1,0 +1,25 @@
+.modal label {
+  display: grid;
+  gap: 6px;
+  padding: 9px 20px 0;
+  color: #8eaaa0;
+  font-size: 11px;
+}
+
+.modal label input {
+  width: 100%;
+  border: 1px solid #244b40;
+  border-radius: 9px;
+  background: #071512;
+  color: #edf7f2;
+  padding: 10px 12px;
+  outline: none;
+}
+
+.modal label input:focus {
+  border-color: #47c991;
+}
+
+.modal label + .modal-actions {
+  margin-top: 14px;
+}

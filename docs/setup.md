@@ -20,10 +20,13 @@ Unlim CLIは[公式手順](https://wiki.unlim.cc/getting-started)に従って導
 
 ```text
 install -m 0755 server/wsm-agent.py ~/minecraft/wsm-agent
+install -m 0755 server/wsm-ops.py ~/minecraft/wsm-ops
 mkdir -p ~/.config/systemd/user
 install -m 0644 server/unlim-daemon.service ~/.config/systemd/user/unlim-daemon.service
+install -m 0644 server/wsm-ops.service server/wsm-ops.timer ~/.config/systemd/user/
 systemctl --user daemon-reload
 systemctl --user enable --now unlim-daemon.service
+systemctl --user enable --now wsm-ops.timer
 ```
 
 別のディレクトリを使用する場合は、管理エージェントとサービスファイル内のパスも変更してください。
@@ -45,6 +48,14 @@ ssh <user>@<server-host>
 初回接続時に表示されるホスト鍵指紋は、Linuxホスト本体または信頼できる別経路で照合してください。
 
 `manager/` からアプリをビルドするか、Releasesで配布されるインストーラーを使用します。別の環境向けにビルドする場合は、`manager/src-tauri/src/lib.rs` のSSH接続先、ユーザー名、管理エージェントのパスを変更してください。
+
+現在の管理GUIでは「接続設定」からホスト名、予備IP、SSHユーザー、管理エージェントのパスを変更できます。設定はWindowsユーザーのAppDataへ保存され、SSH秘密鍵は保存しません。
+
+## 自動保守と通知
+
+初回実行時に `~/.config/wsm/ops.json` が権限600で作成されます。監視間隔は5分、バックアップ間隔は24時間、保存数は5世代です。参加者がオンラインの場合、バックアップと更新は延期されます。
+
+Discord通知を使う場合は、Discordで通知用チャンネルのWebhook URLを作成し、管理GUIの「Discord」から登録します。URLはLinuxホストだけに保存され、リポジトリには含まれません。空欄を保存すると通知を無効化できます。
 
 ## 参加者のWindows端末
 
