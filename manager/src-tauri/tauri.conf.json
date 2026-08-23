@@ -15,8 +15,8 @@
         "title": "Woollest Server Manager",
         "width": 1080,
         "height": 760,
-        "minWidth": 800,
-        "minHeight": 640
+        "resizable": false,
+        "maximizable": false
       }
     ],
     "security": {
