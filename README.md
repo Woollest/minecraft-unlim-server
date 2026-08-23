@@ -5,7 +5,7 @@ Minecraft Java EditionサーバーをUbuntuノートPCで常時運用し、Windo
 ## 構成
 
 ```text
-参加者用Connector（予定）
+参加者用Connector
         │ Unlim P2P
         ▼
 UbuntuノートPC
@@ -24,7 +24,13 @@ Windowsデスクトップ
 - `manager/` — Tauri 2 + React + TypeScript製のWindows管理GUI
 - `server/` — Ubuntu側の許可リスト方式管理エージェントとUnlimサービス
 - `docs/` — 導入・運用手順
-- `connector/` — 参加者用接続アプリ（今後追加予定）
+- `connector/` — 招待キーだけで接続できる参加者用Windowsアプリ
+
+## 参加者用Connector
+
+参加者はUnlim公式CLIを導入し、Connectorへ招待キーを貼り付けます。接続後、Minecraft Java版から `127.0.0.1:25565` を指定します。Connectorは招待キーを保存しません。
+
+Powered by [Unlim](https://unlim.cc/)
 
 ## 管理GUIの機能
 
@@ -64,4 +70,3 @@ npm run tauri build
 ## ライセンス
 
 ライセンスは未指定です。明示的な許可なく再配布・改変利用はできません。
-

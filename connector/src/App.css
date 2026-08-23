@@ -1,0 +1,32 @@
+:root { font-family: "Noto Sans JP", system-ui, sans-serif; color: #ecf7f1; background: #07150f; font-synthesis: none; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 640px; min-height: 520px; background: radial-gradient(circle at 80% 0%, #164731 0, transparent 42%), #07150f; }
+button, input { font: inherit; }
+main { width: min(820px, calc(100% - 56px)); margin: 0 auto; padding: 40px 0 28px; }
+header { display: flex; align-items: center; gap: 14px; margin-bottom: 32px; }
+.mark { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 14px; background: #51df94; color: #062415; font-size: 24px; font-weight: 800; }
+.eyebrow { margin: 0; color: #51df94; font-size: 11px; letter-spacing: .18em; font-weight: 700; }
+h1 { margin: 1px 0 0; font-size: 25px; line-height: 1.2; }
+.pill { margin-left: auto; padding: 8px 13px; border-radius: 999px; background: #18251f; color: #9caf9f; font-size: 12px; }
+.pill.online { color: #69eba5; background: #123723; }
+.hero { display: flex; gap: 20px; padding: 24px; margin-bottom: 16px; border: 1px solid #234334; border-radius: 18px; background: rgba(13, 32, 23, .9); box-shadow: 0 12px 40px rgba(0,0,0,.2); }
+.step { flex: 0 0 40px; height: 40px; display: grid; place-items: center; border: 1px solid #3e6f56; border-radius: 50%; color: #62e69f; font-weight: 700; }
+.content { flex: 1; }
+h2 { margin: 2px 0 7px; font-size: 18px; }
+p { margin: 0 0 18px; color: #a7bcb0; font-size: 13px; }
+.keyrow, .address { display: flex; gap: 10px; }
+input, .address { border: 1px solid #315841; border-radius: 11px; background: #091c13; color: #e8f5ed; }
+input { flex: 1; min-width: 0; padding: 12px 14px; outline: none; }
+input:focus { border-color: #51df94; box-shadow: 0 0 0 3px rgba(81,223,148,.1); }
+button { border: 0; border-radius: 10px; padding: 11px 16px; cursor: pointer; color: #dff5e8; background: #244534; }
+button:hover { filter: brightness(1.12); }
+button:disabled { opacity: .45; cursor: default; }
+.primary { min-width: 112px; background: #51df94; color: #062415; font-weight: 700; }
+.address { align-items: center; padding: 7px 7px 7px 15px; }
+.address code { flex: 1; font-size: 16px; color: #6ceaa7; }
+.install { margin-top: 13px; color: #f1c56e; font-size: 12px; }
+.link, .credit { padding: 0; margin-left: 7px; background: none; color: #6de8a8; text-decoration: underline; }
+footer { display: flex; align-items: center; gap: 12px; min-height: 44px; color: #81978a; font-size: 12px; padding: 3px 4px; }
+footer > div { flex: 1; }
+.danger { background: #572c2c; color: #ffc4c4; }
+.credit { margin-left: 0; white-space: nowrap; text-decoration: none; color: #8ea699; }
