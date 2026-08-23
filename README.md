@@ -1,57 +1,80 @@
 # Minecraft Unlim Server
 
-Minecraft Java EditionサーバーをUbuntuノートPCで常時運用し、Windowsデスクトップから安全に管理するためのプロジェクトです。参加者の接続には[Unlim](https://unlim.cc/)を使用します。
+Dockerで動作するMinecraft Java Editionサーバーを、別のWindows端末からSSH経由で管理するためのプロジェクトです。参加者との接続には[Unlim](https://unlim.cc/)を使用するため、一般的なルーターのポート開放を行わずにサーバーを公開できます。
+
+ホストはノートPCに限定されません。Dockerを実行できるLinuxサーバー、デスクトップPC、小型PC、VPSなどで利用できます。
 
 ## 構成
 
 ```text
-参加者用Connector
+参加者のWindows端末
+└─ Participant Connector
         │ Unlim P2P
         ▼
-UbuntuノートPC
+Linuxホスト
 ├─ Docker Minecraft Paper :25565
 ├─ Unlim CLI / Agent Kit
-├─ wsm-agent
-└─ 自動バックアップ
+├─ 管理エージェント
+└─ バックアップ
         ▲
         │ SSH
-Windowsデスクトップ
-└─ Woollest Server Manager
+Windows管理端末
+└─ Server Manager
 ```
 
 ## ディレクトリ
 
-- `manager/` — Tauri 2 + React + TypeScript製のWindows管理GUI
-- `server/` — Ubuntu側の許可リスト方式管理エージェントとUnlimサービス
+- `manager/` — Tauri 2、React、TypeScript製のWindows管理GUI
+- `server/` — Linuxホスト用の許可リスト方式管理エージェントとUnlimサービス
+- `connector/` — 招待キーから接続する参加者用Windowsアプリ
 - `docs/` — 導入・運用手順
-- `connector/` — 招待キーだけで接続できる参加者用Windowsアプリ
-
-## 参加者用Connector
-
-参加者はUnlim公式CLIを導入し、Connectorへ招待キーを貼り付けます。接続後、Minecraft Java版から `127.0.0.1:25565` を指定します。Connectorは招待キーを保存しません。
-
-Powered by [Unlim](https://unlim.cc/)
 
 ## 管理GUIの機能
 
-- Minecraftの状態・healthy確認
+- Minecraftの稼働状態とヘルスチェック
 - 起動、安全な停止、再起動
-- 参加者一覧と最新ログ
+- オンラインプレイヤーと最新ログの確認
 - 手動バックアップ
-- TPS、ディスク容量、自動起動状態
-- Unlim `25565/TCP`共有の開始・停止
+- TPS、ディスク容量、自動起動設定の確認
+- UnlimによるTCP `25565` 共有の開始・停止
 - Unlim招待情報の表示
+
+## 参加者用Connector
+
+参加者はUnlim公式CLIを導入し、管理者から受け取った招待キーをConnectorへ入力します。標準構成では、接続後にMinecraft Java版から `127.0.0.1:25565` を指定します。
+
+Connectorは招待キーを永続保存しません。Unlim本体もこのリポジトリには含まれないため、公式配布版を使用してください。
+
+Powered by [Unlim](https://unlim.cc/)
+
+## 必要環境
+
+### Linuxホスト
+
+- Docker EngineおよびDocker Compose
+- Python 3.9以降
+- OpenSSH Server
+- Unlim CLI
+- `minecraft` という名前のMinecraftコンテナ
+
+### Windows管理端末
+
+- Windows 10または11
+- Linuxホストへ公開鍵認証で接続できるOpenSSHクライアント
+
+環境固有のユーザー名、ホスト名、SSH鍵、Minecraftの保存先は、利用する環境に合わせて設定してください。
 
 ## セキュリティ
 
-- Unlim API、Docker API、RCONをネットワークへ公開しません。
-- Windows管理GUIからUbuntuへの操作はSSH経由です。
-- Ubuntu側エージェントが受け付ける操作は許可リストで制限されています。
-- Unlimキー、APIトークン、共通パスワード、SSH秘密鍵、ワールド、バックアップ、ログはリポジトリへ保存しません。
+- Unlim API、Docker API、RCONを外部ネットワークへ直接公開しません。
+- 管理操作はSSH経由で行います。
+- Linux側の管理エージェントが受け付ける操作は許可リストで制限されています。
+- Unlimキー、APIトークン、Minecraftの認証情報、SSH秘密鍵、ワールド、バックアップ、ログをリポジトリへ保存しないでください。
+- 初回SSH接続時は、表示されたホスト鍵指紋をサーバー側で確認してください。
 
 ## 開発
 
-管理GUIにはNode.js、Rust、Tauri 2のWindows開発要件が必要です。
+管理GUIまたはConnectorのビルドには、Node.js、Rust、Tauri 2のWindows開発要件が必要です。
 
 ```text
 cd manager

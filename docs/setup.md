@@ -1,22 +1,22 @@
 # セットアップ
 
-## UbuntuノートPC
+以下の `<user>`、`<server-host>`、`<minecraft-dir>` は、実際の環境に合わせて置き換えてください。
+
+## Linuxホスト
 
 必要なもの：
 
 - Docker EngineとDocker Compose
 - Python 3.9以降
 - OpenSSH Server
-- Unlim CLI 1.5.80以降
+- Unlim CLI
 - 稼働中または停止中のMinecraftコンテナ `minecraft`
 
-Unlim CLIは公式手順で導入します。
+Linuxホストは、ノートPC、デスクトップPC、専用サーバー、VPSなど任意の形態で構いません。
 
-```text
-curl -fsSL https://unlim.cc/setup.sh | sh
-```
+Unlim CLIは[公式手順](https://wiki.unlim.cc/getting-started)に従って導入します。
 
-管理エージェントを配置します。
+管理エージェントとユーザーサービスを配置します。次の例ではMinecraftの管理ディレクトリを `~/minecraft` としています。
 
 ```text
 install -m 0755 server/wsm-agent.py ~/minecraft/wsm-agent
@@ -26,39 +26,52 @@ systemctl --user daemon-reload
 systemctl --user enable --now unlim-daemon.service
 ```
 
-ログインしていない状態でもユーザーサービスを動かすには、管理者権限でlingerを有効にします。
+別のディレクトリを使用する場合は、管理エージェントとサービスファイル内のパスも変更してください。
+
+ログインしていない状態でもユーザーサービスを動かす場合は、管理者権限でlingerを有効にします。
 
 ```text
-sudo loginctl enable-linger "$USER"
+sudo loginctl enable-linger "<user>"
 ```
 
 ## Windows管理端末
 
-公開鍵認証でUbuntuへ接続できる状態にします。
+公開鍵認証でLinuxホストへ接続できる状態にします。
 
 ```text
-ssh woollest@wls-server.local
+ssh <user>@<server-host>
 ```
 
-接続先のホスト鍵指紋は、ノートPC本体または信頼済みの既存接続と照合してから登録してください。
+初回接続時に表示されるホスト鍵指紋は、Linuxホスト本体または信頼できる別経路で照合してください。
 
-`manager/`からアプリをビルドするか、Releasesで配布されるインストーラーを使用します。
+`manager/` からアプリをビルドするか、Releasesで配布されるインストーラーを使用します。別の環境向けにビルドする場合は、`manager/src-tauri/src/lib.rs` のSSH接続先、ユーザー名、管理エージェントのパスを変更してください。
 
 ## 参加者のWindows端末
 
-参加者は[Unlim公式手順](https://wiki.unlim.cc/getting-started)でWindows版CLIを導入し、`connector/` のアプリへ管理者から届いた招待キーを入力します。接続後はMinecraft Java版から `127.0.0.1:25565` へ参加します。
+参加者は[Unlim公式手順](https://wiki.unlim.cc/getting-started)でWindows版CLIを導入し、`connector/` のアプリへ管理者から届いた招待キーを入力します。
 
-Connectorは招待キーを保存しません。また、Unlim本体はリポジトリやConnectorへ同梱せず、公式配布版を利用します。
+標準のMinecraftポートを共有している場合、接続先は次のとおりです。
 
-## Java版専用化
+```text
+127.0.0.1:25565
+```
 
-現在の本番構成はTCP `25565` のみを公開します。以前使用していたGeyser/FloodgateとUDP `19132` は本番から外し、復旧可能な退避フォルダへ保存しています。
+ローカルの `25565` がほかのアプリで使用されている場合は、Unlimが表示する実際のローカルポートを使用してください。Connectorは招待キーを永続保存せず、Unlim本体も同梱しません。
 
-設定変更後は、Minecraftがhealthyになること、`plugins` の一覧にGeyser/Floodgateがないこと、ログに両プラグイン由来のエラーがないことを確認してから公開します。
+## Minecraft構成
+
+標準構成はMinecraft Java Edition用のTCP `25565` を共有します。統合版にも対応させる場合は、Geyser/Floodgateの導入とUDPポートの追加設定が別途必要です。
+
+設定変更後は、次の項目を確認してから公開してください。
+
+- コンテナがhealthyになること
+- 必要なプラグインがすべて読み込まれていること
+- 起動ログに重大なエラーがないこと
+- バックアップから復元できること
 
 ## 運用上の注意
 
-- Unlim接続キーはパスワードと同様に扱います。
-- 管理GUIにSSH秘密鍵やMinecraft共通パスワードを埋め込まないでください。
+- Unlim接続キーはパスワードと同様に扱ってください。
+- 管理GUIへSSH秘密鍵やMinecraftの認証情報を埋め込まないでください。
 - ワールド移行やプラグイン更新の前にバックアップと復元試験を行ってください。
-- Unlim共有を停止すると、そのセッションのキーは無効になります。
+- Unlim共有を停止すると、そのセッションの招待キーは無効になります。
