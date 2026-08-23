@@ -15,7 +15,8 @@
         "title": "Woollest SMP Connector",
         "width": 860,
         "height": 610,
-        "resizable": false
+        "resizable": false,
+        "maximizable": false
       }
     ],
     "security": {

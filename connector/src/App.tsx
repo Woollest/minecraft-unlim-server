@@ -24,11 +24,14 @@ function App() {
     catch (error) { setMessage(String(error)); } finally { setBusy(false); }
   }
   async function copyAddress() { await navigator.clipboard.writeText(status.localAddress); setMessage("Minecraftの接続先をコピーしました。"); }
+  const footerMessage = status.connected
+    ? "接続中です。Minecraftから参加できます。"
+    : message || "キーはこのPC内でも保存しません。";
   return <main>
     <header><div className="mark">W</div><div><p className="eyebrow">WOOLLEST SMP</p><h1>かんたん接続</h1></div><span className={`pill ${status.connected ? "online" : ""}`}>{status.detail}</span></header>
     <section className="hero"><div className="step">1</div><div className="content"><h2>招待キーを入力</h2><p>管理者から届いたUnlimのキーを貼り付けてください。</p><div className="keyrow"><input type="password" value={key} onChange={(e) => setKey(e.target.value)} placeholder="招待キー" disabled={status.connected || busy} /><button className="primary" onClick={connect} disabled={!status.installed || !key.trim() || status.connected || busy}>接続する</button></div>{!status.installed && <div className="install">Unlimがまだありません。<button className="link" onClick={() => openUrl("https://wiki.unlim.cc/getting-started")}>公式ページから導入</button></div>}</div></section>
     <section className="hero"><div className="step">2</div><div className="content"><h2>Minecraftから参加</h2><p>Java版の「マルチプレイ」で、次のサーバーアドレスを追加します。</p><div className="address"><code>{status.localAddress}</code><button onClick={copyAddress}>コピー</button></div></div></section>
-    <footer><div>{message || "キーはこのPC内でも保存しません。"}</div>{status.connected && <button className="danger" onClick={disconnect} disabled={busy}>切断する</button>}<button className="credit" onClick={() => openUrl("https://unlim.cc/")}>Powered by Unlim ↗</button></footer>
+    <footer><div>{footerMessage}</div>{status.connected && <button className="danger" onClick={disconnect} disabled={busy}>切断する</button>}<button className="credit" onClick={() => openUrl("https://unlim.cc/")}>Powered by Unlim ↗</button></footer>
   </main>;
 }
 export default App;
