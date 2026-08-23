@@ -1,0 +1,38 @@
+# Secrets and local credentials
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+known_hosts
+api_token
+api_endpoint
+*secret*
+
+# Minecraft runtime data
+data/
+world/
+world_nether/
+world_the_end/
+backups/
+logs/
+*.log
+*.tar.gz
+*.zip
+*.db
+*.sqlite*
+
+# Node / Tauri build output
+node_modules/
+dist/
+target/
+*.msi
+*.exe
+
+# IDE and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini
+
