@@ -1,0 +1,12 @@
+# 20 ticks = approximately one second after login
+delay-ticks: 20
+
+messages:
+  - '&8&m----------------------------------------'
+  - '&6&lWoollest SMP &fへようこそ、&e{player}&fさん！'
+  - '&fクエスト: &a/quests &8| &fホーム: &a/homes &8| &f座る: &a/sit'
+  - '&7ルール・接続情報・お知らせはDiscordをご確認ください。'
+  - '&8&m----------------------------------------'
+
+first-join-messages:
+  - '&b初参加ありがとうございます！まずは &a/quests &bを確認してみましょう。'

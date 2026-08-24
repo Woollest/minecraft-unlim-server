@@ -1,0 +1,6 @@
+name: WoollestWelcome
+version: 1.0.0
+main: jp.woollest.welcome.WoollestWelcome
+api-version: '1.21'
+description: Configurable private welcome message for Woollest SMP
+author: Woollest
