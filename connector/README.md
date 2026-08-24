@@ -4,10 +4,10 @@
 
 ## 使い方
 
-1. [Unlim公式ページ](https://wiki.unlim.cc/getting-started)からWindows版CLIを導入します。
+1. Connectorを起動します。必要なUnlim公式版は自動的に導入・更新されます。
 2. 管理者から届いた招待キーをConnectorへ貼り付けて「接続する」を押します。
 3. Minecraft Java版で `127.0.0.1:25565` へ接続します。
 
-招待キーは保存しません。Unlimが同じポートを使用できない場合は、Unlim側に表示される実際のローカルポートを確認してください。
+招待キーは保存しません。Unlimは公式配布APIのURLから取得し、公開されているファイルサイズとSHA-256が一致した場合だけ使用します。Connector自身の更新も署名検証後に適用します。Unlimが同じポートを使用できない場合は、Unlim側に表示される実際のローカルポートを確認してください。
 
 Powered by [Unlim](https://unlim.cc/)

@@ -61,7 +61,7 @@ Unlimの招待キーを自動共有する場合は、参加者が閲覧できる
 
 ## 参加者のWindows端末
 
-参加者は[Unlim公式手順](https://wiki.unlim.cc/getting-started)でWindows版CLIを導入し、`connector/` のアプリへ管理者から届いた招待キーを入力します。
+参加者は`connector/` のアプリを起動し、管理者から届いた招待キーを入力します。必要なUnlim公式CLIはアプリが専用フォルダへ自動導入・更新し、公式APIのSHA-256で検証します。Connector自身もGitHub Releasesの署名付き更新を確認します。
 
 標準のMinecraftポートを共有している場合、接続先は次のとおりです。
 
