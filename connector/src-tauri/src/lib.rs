@@ -8,6 +8,8 @@ use std::os::windows::process::CommandExt;
 
 const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 const UNLIM_MAP_URL: &str = "https://api.zpw.jp/unlimmap/";
+const KEY_SERVICE: &str = "jp.woollest.minecraft-connector";
+const KEY_ACCOUNT: &str = "unlim-invite-key";
 struct ConnectorState(Mutex<Option<Child>>);
 
 #[derive(Serialize)]
@@ -127,6 +129,33 @@ fn install_unlim() -> Result<String, String> {
     Ok(format!("Unlim {} を安全に導入しました。", map.version))
 }
 
+fn credential() -> Result<keyring::Entry, String> {
+    keyring::Entry::new(KEY_SERVICE, KEY_ACCOUNT)
+        .map_err(|error| format!("Windows資格情報を開けません: {error}"))
+}
+
+fn save_key(key: &str) -> Result<(), String> {
+    credential()?.set_password(key)
+        .map_err(|error| format!("接続キーを安全に保存できません: {error}"))
+}
+
+#[tauri::command]
+fn load_saved_key() -> Result<Option<String>, String> {
+    match credential()?.get_password() {
+        Ok(key) if !key.trim().is_empty() => Ok(Some(key)),
+        Ok(_) | Err(keyring::Error::NoEntry) => Ok(None),
+        Err(error) => Err(format!("保存済み接続キーを読み込めません: {error}")),
+    }
+}
+
+#[tauri::command]
+fn clear_saved_key() -> Result<(), String> {
+    match credential()?.delete_credential() {
+        Ok(()) | Err(keyring::Error::NoEntry) => Ok(()),
+        Err(error) => Err(format!("保存済み接続キーを削除できません: {error}")),
+    }
+}
+
 #[tauri::command]
 fn ensure_unlim() -> Result<String, String> { install_unlim() }
 
@@ -149,6 +178,7 @@ fn connect(key: String, state: tauri::State<ConnectorState>) -> Result<(), Strin
     if key.len() < 8 || key.len() > 512 || !key.chars().all(|c| c.is_ascii_alphanumeric() || "-_.:/?=&".contains(c)) { return Err("接続キーの形式を確認してください。".into()); }
     if is_connected() { return Err("すでにUnlimが接続中です。いったん切断してください。".into()); }
     let exe = find_unlim().ok_or("Unlimの準備が完了していません。")?;
+    save_key(key)?;
     let child = command(&exe).args(["--connect", key, "--no-tui"]).stdin(Stdio::null()).stdout(Stdio::null()).stderr(Stdio::null())
         .spawn().map_err(|error| format!("接続を開始できません: {error}"))?;
     *state.0.lock().map_err(|_| "内部状態を取得できません。")? = Some(child); Ok(())
@@ -166,6 +196,21 @@ pub fn run() {
     tauri::Builder::default().manage(ConnectorState(Mutex::new(None)))
         .plugin(tauri_plugin_opener::init()).plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
-        .invoke_handler(tauri::generate_handler![connector_status, ensure_unlim, connect, disconnect])
+        .invoke_handler(tauri::generate_handler![connector_status, ensure_unlim, load_saved_key, clear_saved_key, connect, disconnect])
         .run(tauri::generate_context!()).expect("error while running tauri application");
+}
+
+#[cfg(all(test, target_os = "windows"))]
+mod tests {
+    #[test]
+    fn windows_credential_round_trip() {
+        let entry = keyring::Entry::new(
+            "jp.woollest.minecraft-connector.test",
+            "credential-round-trip",
+        ).expect("create test credential");
+        let _ = entry.delete_credential();
+        entry.set_password("temporary-test-value").expect("save test credential");
+        assert_eq!(entry.get_password().expect("load test credential"), "temporary-test-value");
+        entry.delete_credential().expect("delete test credential");
+    }
 }

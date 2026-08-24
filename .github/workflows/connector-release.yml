@@ -61,7 +61,7 @@ jobs:
             2. Discordの接続情報に掲載された招待キーを入力します。
             3. Minecraft Java版から `127.0.0.1:25565` に接続します。
 
-            招待キーは保存されません。ダウンロードしたUnlimは公式SHA-256で検証されます。
+            招待キーはWindows資格情報へ安全に保存できます。ダウンロードしたUnlimは公式SHA-256で検証されます。
           files: |
             connector/src-tauri/target/release/bundle/nsis/*.exe
             connector/src-tauri/target/release/bundle/nsis/*.sig
