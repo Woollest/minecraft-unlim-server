@@ -11,6 +11,7 @@ import tempfile
 import time
 import urllib.error
 import urllib.request
+from datetime import datetime, timezone
 
 HOME = pathlib.Path.home()
 MC_DIR = HOME / "minecraft"
@@ -175,18 +176,41 @@ def publish_connection(active, key=None):
     webhook = connection_webhook()
     if not webhook:
         return False
-    content = ("**Woollest SMP 接続情報**\n"
-               "状態: 🟢 共有中\n"
-               f"Unlim招待キー: ||{key}||\n"
-               "接続後のMinecraftアドレス: `127.0.0.1:25565`\n"
-               "招待キーをDiscord外へ転載しないでください。") if active and key else (
-               "**Woollest SMP 接続情報**\n状態: 🔴 停止中\n現在は接続できません。")
+    timestamp = datetime.now(timezone.utc).isoformat()
+    if active and key:
+        content = f"## 🔑 接続コード\n```text\n{key}\n```"
+        embed = {
+            "title": "🟢 Woollest SMP は接続可能です",
+            "description": "上のコードを **Woollest SMP Connector** に貼り付けて接続してください。",
+            "color": 0x57F287,
+            "fields": [
+                {"name": "🎮 Minecraftの接続先", "value": "`127.0.0.1:25565`", "inline": True},
+                {"name": "📡 接続状態", "value": "Unlim共有中", "inline": True},
+                {"name": "参加手順", "value": "1. 接続コードをコピー\n2. Connectorへ貼り付けて接続\n3. Minecraft Java版から参加"},
+                {"name": "⚠️ 取り扱い", "value": "接続コードをこのDiscordサーバーの外へ転載しないでください。"},
+            ],
+            "footer": {"text": "接続状態に合わせて、この投稿は自動更新されます"},
+            "timestamp": timestamp,
+        }
+    else:
+        content = "## 🔌 Woollest SMP 接続情報"
+        embed = {
+            "title": "🔴 現在は接続できません",
+            "description": "サーバーまたはUnlim共有が停止しています。再開すると、この投稿へ新しい接続コードが自動掲載されます。",
+            "color": 0xED4245,
+            "footer": {"text": "接続状態に合わせて、この投稿は自動更新されます"},
+            "timestamp": timestamp,
+        }
     message_id = None
     try:
         message_id = json.loads(CONNECTION_MESSAGE.read_text(encoding="utf-8")).get("message_id")
     except (OSError, json.JSONDecodeError):
         pass
-    payload = json.dumps({"content": content, "allowed_mentions": {"parse": []}}).encode("utf-8")
+    payload = json.dumps({
+        "content": content,
+        "embeds": [embed],
+        "allowed_mentions": {"parse": []},
+    }).encode("utf-8")
     if message_id:
         request = urllib.request.Request(
             f"{webhook}/messages/{message_id}", data=payload,
