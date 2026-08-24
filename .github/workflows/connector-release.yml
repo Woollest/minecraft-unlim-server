@@ -1,0 +1,43 @@
+name: Build Connector release
+
+on:
+  push:
+    tags:
+      - "connector-v*"
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: connector
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: connector/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: connector/src-tauri
+      - run: npm ci
+      - run: npm run tauri build
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: Woollest SMP Connector ${{ github.ref_name }}
+          body: |
+            参加者向けのWindows接続アプリです。
+
+            1. Unlim公式版をインストールします。
+            2. Discordの接続情報に掲載された招待キーを入力します。
+            3. Minecraft Java版から `127.0.0.1:25565` に接続します。
+
+            招待キーはアプリ内に保存されません。
+          files: |
+            connector/src-tauri/target/release/bundle/nsis/*.exe
+            connector/src-tauri/target/release/bundle/msi/*.msi
