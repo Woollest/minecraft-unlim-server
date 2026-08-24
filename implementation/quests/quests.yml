@@ -1,0 +1,474 @@
+# Woollest Minecraft Server - custom quests
+# UTF-8で保存してください。変更後は `make quests-deploy` で反映します。
+quests:
+  stone_miner:
+    name: '<gold>石材調達'
+    ask-message: '<yellow>石を64個採掘しよう。'
+    finish-message: '<green>石材調達完了！ 鉄インゴットを受け取りました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          break-block-names: [STONE]
+          break-block-amounts: [64]
+          break-block-durability: [0]
+    rewards:
+      items:
+        - ==: org.bukkit.inventory.ItemStack
+          type: IRON_INGOT
+          amount: 8
+      exp: 50
+      quest-points: 1
+
+  zombie_hunter:
+    name: '<red>ゾンビハンター'
+    ask-message: '<yellow>ゾンビを10体倒そう。'
+    finish-message: '<green>討伐完了！ 金のリンゴを受け取りました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          mobs-to-kill: [Zombie]
+          mob-amounts: [10]
+    rewards:
+      items:
+        - ==: org.bukkit.inventory.ItemStack
+          type: GOLDEN_APPLE
+          amount: 1
+      exp: 100
+      quest-points: 1
+
+  casual_angler:
+    name: '<aqua>釣り人への一歩'
+    ask-message: '<yellow>魚を5匹釣ろう。'
+    finish-message: '<green>釣り完了！ 経験値を獲得しました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          fish-to-catch: 5
+    rewards:
+      exp: 150
+      quest-points: 1
+
+
+  coal_miner:
+    name: '<gray>石炭採掘'
+    ask-message: '<yellow>石炭採掘：目標を32回達成しよう。'
+    finish-message: '<green>採掘・収穫完了！ 少量の経験値を獲得しました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          break-block-names: [COAL_ORE]
+          break-block-amounts: [32]
+          break-block-durability: [0]
+    rewards:
+      exp: 25
+      quest-points: 1
+
+
+  copper_miner:
+    name: '<gold>銅鉱夫'
+    ask-message: '<yellow>銅鉱夫：目標を32回達成しよう。'
+    finish-message: '<green>採掘・収穫完了！ 少量の経験値を獲得しました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          break-block-names: [COPPER_ORE]
+          break-block-amounts: [32]
+          break-block-durability: [0]
+    rewards:
+      exp: 25
+      quest-points: 1
+
+
+  iron_miner:
+    name: '<gray>鉄鉱夫'
+    ask-message: '<yellow>鉄鉱夫：目標を24回達成しよう。'
+    finish-message: '<green>採掘・収穫完了！ 少量の経験値を獲得しました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          break-block-names: [IRON_ORE]
+          break-block-amounts: [24]
+          break-block-durability: [0]
+    rewards:
+      exp: 35
+      quest-points: 1
+
+
+  redstone_miner:
+    name: '<red>赤石採掘'
+    ask-message: '<yellow>赤石採掘：目標を32回達成しよう。'
+    finish-message: '<green>採掘・収穫完了！ 少量の経験値を獲得しました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          break-block-names: [REDSTONE_ORE]
+          break-block-amounts: [32]
+          break-block-durability: [0]
+    rewards:
+      exp: 30
+      quest-points: 1
+
+
+  lapis_miner:
+    name: '<blue>ラピス採掘'
+    ask-message: '<yellow>ラピス採掘：目標を16回達成しよう。'
+    finish-message: '<green>採掘・収穫完了！ 少量の経験値を獲得しました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          break-block-names: [LAPIS_ORE]
+          break-block-amounts: [16]
+          break-block-durability: [0]
+    rewards:
+      exp: 30
+      quest-points: 1
+
+
+  gold_miner:
+    name: '<gold>金鉱夫'
+    ask-message: '<yellow>金鉱夫：目標を16回達成しよう。'
+    finish-message: '<green>採掘・収穫完了！ 少量の経験値を獲得しました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          break-block-names: [GOLD_ORE]
+          break-block-amounts: [16]
+          break-block-durability: [0]
+    rewards:
+      exp: 40
+      quest-points: 1
+
+
+  diamond_miner:
+    name: '<aqua>小さな輝き'
+    ask-message: '<yellow>小さな輝き：目標を3回達成しよう。'
+    finish-message: '<green>採掘・収穫完了！ 少量の経験値を獲得しました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          break-block-names: [DIAMOND_ORE]
+          break-block-amounts: [3]
+          break-block-durability: [0]
+    rewards:
+      exp: 50
+      quest-points: 1
+
+
+  deepslate_miner:
+    name: '<gray>深層の石工'
+    ask-message: '<yellow>深層の石工：目標を64回達成しよう。'
+    finish-message: '<green>採掘・収穫完了！ 少量の経験値を獲得しました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          break-block-names: [DEEPSLATE]
+          break-block-amounts: [64]
+          break-block-durability: [0]
+    rewards:
+      exp: 30
+      quest-points: 1
+
+
+  quartz_miner:
+    name: '<white>ネザーの白石'
+    ask-message: '<yellow>ネザーの白石：目標を32回達成しよう。'
+    finish-message: '<green>採掘・収穫完了！ 少量の経験値を獲得しました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          break-block-names: [NETHER_QUARTZ_ORE]
+          break-block-amounts: [32]
+          break-block-durability: [0]
+    rewards:
+      exp: 35
+      quest-points: 1
+
+
+  obsidian_miner:
+    name: '<blue>黒曜石の備え'
+    ask-message: '<yellow>黒曜石の備え：目標を8回達成しよう。'
+    finish-message: '<green>採掘・収穫完了！ 少量の経験値を獲得しました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          break-block-names: [OBSIDIAN]
+          break-block-amounts: [8]
+          break-block-durability: [0]
+    rewards:
+      exp: 45
+      quest-points: 1
+
+
+  lumberjack:
+    name: '<green>木こりの仕事'
+    ask-message: '<yellow>木こりの仕事：目標を32回達成しよう。'
+    finish-message: '<green>採掘・収穫完了！ 少量の経験値を獲得しました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          break-block-names: [OAK_LOG]
+          break-block-amounts: [32]
+          break-block-durability: [0]
+    rewards:
+      exp: 20
+      quest-points: 1
+
+
+  wheat_harvest:
+    name: '<yellow>小麦の収穫'
+    ask-message: '<yellow>小麦の収穫：目標を32回達成しよう。'
+    finish-message: '<green>採掘・収穫完了！ 少量の経験値を獲得しました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          break-block-names: [WHEAT]
+          break-block-amounts: [32]
+          break-block-durability: [0]
+    rewards:
+      exp: 20
+      quest-points: 1
+
+
+  carrot_harvest:
+    name: '<gold>ニンジンの収穫'
+    ask-message: '<yellow>ニンジンの収穫：目標を32回達成しよう。'
+    finish-message: '<green>採掘・収穫完了！ 少量の経験値を獲得しました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          break-block-names: [CARROTS]
+          break-block-amounts: [32]
+          break-block-durability: [0]
+    rewards:
+      exp: 20
+      quest-points: 1
+
+
+  potato_harvest:
+    name: '<yellow>ジャガイモの収穫'
+    ask-message: '<yellow>ジャガイモの収穫：目標を32回達成しよう。'
+    finish-message: '<green>採掘・収穫完了！ 少量の経験値を獲得しました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          break-block-names: [POTATOES]
+          break-block-amounts: [32]
+          break-block-durability: [0]
+    rewards:
+      exp: 20
+      quest-points: 1
+
+
+  sugar_cane_harvest:
+    name: '<green>サトウキビ農家'
+    ask-message: '<yellow>サトウキビ農家：目標を32回達成しよう。'
+    finish-message: '<green>採掘・収穫完了！ 少量の経験値を獲得しました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          break-block-names: [SUGAR_CANE]
+          break-block-amounts: [32]
+          break-block-durability: [0]
+    rewards:
+      exp: 20
+      quest-points: 1
+
+
+  pumpkin_harvest:
+    name: '<gold>カボチャ畑'
+    ask-message: '<yellow>カボチャ畑：目標を8回達成しよう。'
+    finish-message: '<green>採掘・収穫完了！ 少量の経験値を獲得しました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          break-block-names: [PUMPKIN]
+          break-block-amounts: [8]
+          break-block-durability: [0]
+    rewards:
+      exp: 20
+      quest-points: 1
+
+
+  melon_harvest:
+    name: '<green>スイカ畑'
+    ask-message: '<yellow>スイカ畑：目標を16回達成しよう。'
+    finish-message: '<green>採掘・収穫完了！ 少量の経験値を獲得しました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          break-block-names: [MELON]
+          break-block-amounts: [16]
+          break-block-durability: [0]
+    rewards:
+      exp: 20
+      quest-points: 1
+
+
+  skeleton_hunter:
+    name: '<gray>スケルトン退治'
+    ask-message: '<yellow>スケルトン退治：目標を10回達成しよう。'
+    finish-message: '<green>討伐完了！ 少量の経験値を獲得しました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          mobs-to-kill: [Skeleton]
+          mob-amounts: [10]
+    rewards:
+      exp: 30
+      quest-points: 1
+
+
+  spider_hunter:
+    name: '<gray>クモ退治'
+    ask-message: '<yellow>クモ退治：目標を10回達成しよう。'
+    finish-message: '<green>討伐完了！ 少量の経験値を獲得しました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          mobs-to-kill: [Spider]
+          mob-amounts: [10]
+    rewards:
+      exp: 25
+      quest-points: 1
+
+
+  creeper_hunter:
+    name: '<green>匠への警戒'
+    ask-message: '<yellow>匠への警戒：目標を5回達成しよう。'
+    finish-message: '<green>討伐完了！ 少量の経験値を獲得しました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          mobs-to-kill: [Creeper]
+          mob-amounts: [5]
+    rewards:
+      exp: 35
+      quest-points: 1
+
+
+  drowned_hunter:
+    name: '<aqua>水没者退治'
+    ask-message: '<yellow>水没者退治：目標を5回達成しよう。'
+    finish-message: '<green>討伐完了！ 少量の経験値を獲得しました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          mobs-to-kill: [Drowned]
+          mob-amounts: [5]
+    rewards:
+      exp: 30
+      quest-points: 1
+
+
+  enderman_hunter:
+    name: '<blue>影を追う者'
+    ask-message: '<yellow>影を追う者：目標を3回達成しよう。'
+    finish-message: '<green>討伐完了！ 少量の経験値を獲得しました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          mobs-to-kill: [Enderman]
+          mob-amounts: [3]
+    rewards:
+      exp: 40
+      quest-points: 1
+
+
+  pillager_hunter:
+    name: '<red>略奪者退治'
+    ask-message: '<yellow>略奪者退治：目標を5回達成しよう。'
+    finish-message: '<green>討伐完了！ 少量の経験値を獲得しました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          mobs-to-kill: [Pillager]
+          mob-amounts: [5]
+    rewards:
+      exp: 35
+      quest-points: 1
+
+
+  blaze_hunter:
+    name: '<gold>炎の討伐'
+    ask-message: '<yellow>炎の討伐：目標を5回達成しよう。'
+    finish-message: '<green>討伐完了！ 少量の経験値を獲得しました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          mobs-to-kill: [Blaze]
+          mob-amounts: [5]
+    rewards:
+      exp: 40
+      quest-points: 1
+
+
+  slime_hunter:
+    name: '<green>スライム掃除'
+    ask-message: '<yellow>スライム掃除：目標を10回達成しよう。'
+    finish-message: '<green>討伐完了！ 少量の経験値を獲得しました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          mobs-to-kill: [Slime]
+          mob-amounts: [10]
+    rewards:
+      exp: 25
+      quest-points: 1
+
+
+  phantom_hunter:
+    name: '<blue>夜空の安全'
+    ask-message: '<yellow>夜空の安全：目標を3回達成しよう。'
+    finish-message: '<green>討伐完了！ 少量の経験値を獲得しました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          mobs-to-kill: [Phantom]
+          mob-amounts: [3]
+    rewards:
+      exp: 35
+      quest-points: 1
+
+
+  witch_hunter:
+    name: '<blue>魔女退治'
+    ask-message: '<yellow>魔女退治：目標を3回達成しよう。'
+    finish-message: '<green>討伐完了！ 少量の経験値を獲得しました。'
+    redo-delay: 1440
+    stages:
+      ordered:
+        1:
+          mobs-to-kill: [Witch]
+          mob-amounts: [3]
+    rewards:
+      exp: 40
+      quest-points: 1
