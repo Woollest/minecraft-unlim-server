@@ -15,6 +15,8 @@ import urllib.request
 HOME = pathlib.Path.home()
 MC_DIR = HOME / "minecraft"
 UNLIM = HOME / ".local/bin/unlim"
+OPS_CONFIG = HOME / ".config/wsm/ops.json"
+CONNECTION_MESSAGE = HOME / ".local/state/wsm/discord-connection.json"
 ANSI = re.compile(r"\x1b(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
 
 
@@ -121,27 +123,105 @@ def backup_list():
 
 
 def discord_configured():
-    path = HOME / ".config/wsm/ops.json"
     try:
-        return bool(json.loads(path.read_text(encoding="utf-8")).get("discord_webhook"))
+        return bool(json.loads(OPS_CONFIG.read_text(encoding="utf-8")).get("discord_webhook"))
     except (OSError, json.JSONDecodeError):
         return False
 
 
-def set_discord_webhook():
+def set_discord_webhook(key="discord_webhook"):
     value = sys.stdin.read(600).strip()
     if value and not re.fullmatch(r"https://(?:canary\.|ptb\.)?discord(?:app)?\.com/api/webhooks/[A-Za-z0-9._/-]+", value):
         raise RuntimeError("Discord Webhook URLの形式が正しくありません。")
-    path = HOME / ".config/wsm/ops.json"
-    path.parent.mkdir(parents=True, exist_ok=True)
+    OPS_CONFIG.parent.mkdir(parents=True, exist_ok=True)
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
+        data = json.loads(OPS_CONFIG.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         data = {}
-    data["discord_webhook"] = value
-    path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    path.chmod(0o600)
+    data[key] = value
+    OPS_CONFIG.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    OPS_CONFIG.chmod(0o600)
+    if key == "discord_connection_webhook":
+        CONNECTION_MESSAGE.unlink(missing_ok=True)
     return {"message": "Discord通知を有効にしました。" if value else "Discord通知を無効にしました。"}
+
+
+def connection_webhook():
+    try:
+        return str(json.loads(OPS_CONFIG.read_text(encoding="utf-8")).get("discord_connection_webhook", "")).strip()
+    except (OSError, json.JSONDecodeError):
+        return ""
+
+
+def share_key(value):
+    preferred = {"key", "connection_key", "connectionKey", "share_key", "shareKey"}
+    if isinstance(value, dict):
+        for key, item in value.items():
+            if key in preferred and isinstance(item, str) and item.strip():
+                return item.strip()
+        for item in value.values():
+            found = share_key(item)
+            if found:
+                return found
+    elif isinstance(value, list):
+        for item in value:
+            found = share_key(item)
+            if found:
+                return found
+    return None
+
+
+def publish_connection(active, key=None):
+    webhook = connection_webhook()
+    if not webhook:
+        return False
+    content = ("**Woollest SMP 接続情報**\n"
+               "状態: 🟢 共有中\n"
+               f"Unlim招待キー: ||{key}||\n"
+               "接続後のMinecraftアドレス: `127.0.0.1:25565`\n"
+               "招待キーをDiscord外へ転載しないでください。") if active and key else (
+               "**Woollest SMP 接続情報**\n状態: 🔴 停止中\n現在は接続できません。")
+    message_id = None
+    try:
+        message_id = json.loads(CONNECTION_MESSAGE.read_text(encoding="utf-8")).get("message_id")
+    except (OSError, json.JSONDecodeError):
+        pass
+    payload = json.dumps({"content": content, "allowed_mentions": {"parse": []}}).encode("utf-8")
+    if message_id:
+        request = urllib.request.Request(
+            f"{webhook}/messages/{message_id}", data=payload,
+            headers={"Content-Type": "application/json", "User-Agent": "WoollestServerManager/0.1"},
+            method="PATCH",
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=20):
+                return True
+        except urllib.error.HTTPError as error:
+            if error.code not in (403, 404):
+                raise
+    separator = "&" if "?" in webhook else "?"
+    request = urllib.request.Request(
+        f"{webhook}{separator}wait=true", data=payload,
+        headers={"Content-Type": "application/json", "User-Agent": "WoollestServerManager/0.1"},
+        method="POST",
+    )
+    with urllib.request.urlopen(request, timeout=20) as response:
+        created = json.loads(response.read().decode("utf-8"))
+    CONNECTION_MESSAGE.parent.mkdir(parents=True, exist_ok=True)
+    CONNECTION_MESSAGE.write_text(json.dumps({"message_id": created["id"]}) + "\n", encoding="utf-8")
+    CONNECTION_MESSAGE.chmod(0o600)
+    return True
+
+
+def publish_current_connection(retries=15):
+    for _ in range(retries):
+        share = unlim_json(["share"])
+        key = share_key(share)
+        if key:
+            publish_connection(True, key)
+            return True
+        time.sleep(1)
+    raise RuntimeError("Unlim招待キーを取得できませんでした。")
 
 
 def restore_latest():
@@ -243,6 +323,15 @@ def main():
         result = {"configured": discord_configured()}
     elif action == "discord-set":
         result = set_discord_webhook()
+    elif action == "discord-connection-set":
+        result = set_discord_webhook("discord_connection_webhook")
+        if connection_webhook() and unlim_json(["status"]).get("mode") == "server":
+            publish_current_connection()
+            result = {"message": "接続情報の自動共有を有効にし、現在の招待キーをDiscordへ掲載しました。"}
+        elif connection_webhook():
+            result = {"message": "接続情報の自動共有を有効にしました。次回の共有開始時に掲載します。"}
+        else:
+            result = {"message": "接続情報の自動共有を無効にしました。"}
     elif action == "unlim-start":
         if docker_state()[0] != "running":
             raise RuntimeError("先にMinecraftを起動してください。")
@@ -251,9 +340,11 @@ def main():
             raise RuntimeError(f"Unlim is busy: {current.get('mode')}")
         if current.get("mode") == "idle":
             unlim_post("/api/now", {"port_list": "25565/tcp", "public": False})
-        result = {"message": "Unlimの共有開始を要求しました。"}
+        posted = publish_current_connection()
+        result = {"message": "Unlim共有を開始し、Discordの接続情報を更新しました。" if posted else "Unlimの共有開始を要求しました。"}
     elif action == "unlim-stop":
         run([UNLIM, "stop"], timeout=20)
+        publish_connection(False)
         result = {"message": "Unlimの共有を停止しました。"}
     elif action == "unlim-share":
         result = {"share": unlim_json(["share"])}

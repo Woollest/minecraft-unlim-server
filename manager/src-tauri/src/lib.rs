@@ -97,11 +97,25 @@ fn save_discord_webhook(webhook: String) -> Result<Value, String> {
     }
 }
 
+#[tauri::command]
+fn save_discord_connection_webhook(webhook: String) -> Result<Value, String> {
+    if webhook.len() > 512 || (!webhook.is_empty() && !webhook.starts_with("https://discord.com/api/webhooks/")) {
+        return Err("Discord Webhook URLを確認してください。".into());
+    }
+    let _guard = SSH_LOCK.lock().map_err(|_| "SSH操作の排他制御に失敗しました。")?;
+    let config = read_config();
+    match call_host(&config, &config.host, "discord-connection-set", &webhook) {
+        Ok(value) => Ok(value),
+        Err(primary) if !config.fallback_host.is_empty() => call_host(&config, &config.fallback_host, "discord-connection-set", &webhook).map_err(|fallback| format!("接続できませんでした。\n{primary}\n{fallback}")),
+        Err(primary) => Err(primary),
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![run_action, get_connection, save_connection, save_discord_webhook])
+        .invoke_handler(tauri::generate_handler![run_action, get_connection, save_connection, save_discord_webhook, save_discord_connection_webhook])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

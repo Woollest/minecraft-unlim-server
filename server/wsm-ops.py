@@ -26,6 +26,7 @@ DEFAULTS = {
     "load_warning_per_cpu": 1.5,
     "battery_safe_stop_percent": 15,
     "discord_webhook": "",
+    "discord_connection_webhook": "",
 }
 
 
@@ -62,16 +63,10 @@ def unlim_status():
 
 
 def unlim_start():
-    endpoint = json.loads((HOME / ".unlimited/api_endpoint").read_text(encoding="utf-8"))
-    token = (HOME / ".unlimited/api_token").read_text(encoding="utf-8").strip()
-    request = urllib.request.Request(
-        f"http://127.0.0.1:{endpoint['port']}/api/now",
-        data=json.dumps({"port_list": "25565/tcp", "public": False}).encode(),
-        headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
-        method="POST",
-    )
-    with urllib.request.urlopen(request, timeout=20) as response:
-        return response.read().decode("utf-8", errors="replace")
+    result = run([MC_DIR / "wsm-agent", "unlim-start"], 60)
+    if result.returncode != 0:
+        raise RuntimeError(result.stderr.strip() or result.stdout.strip() or "wsm-agent failed")
+    return result.stdout.strip()
 
 
 def temperatures():
