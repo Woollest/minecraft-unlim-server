@@ -1,6 +1,6 @@
 [package]
 name = "woollest-smp-connector"
-version = "0.3.0"
+version = "0.3.1"
 description = "Simple Unlim connector for Woollest SMP"
 authors = ["Woollest"]
 edition = "2021"

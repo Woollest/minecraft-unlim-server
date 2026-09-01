@@ -64,13 +64,54 @@ fn run_unlim(args: &[&str]) -> Result<std::process::Output, String> {
     let exe = find_unlim().ok_or("Unlimが見つかりません。自動セットアップを実行してください。")?;
     command(&exe).args(args).output().map_err(|error| format!("Unlimを実行できません: {error}"))
 }
-fn status_value() -> Option<Value> {
-    let output = run_unlim(&["status", "--json"]).ok()?;
-    serde_json::from_slice(&output.stdout).ok()
+
+fn output_text(output: &std::process::Output) -> String {
+    format!("{}\n{}", String::from_utf8_lossy(&output.stdout), String::from_utf8_lossy(&output.stderr))
+}
+
+fn instance_pids_from(output: &std::process::Output) -> Vec<u32> {
+    instance_pids_from_text(&output_text(output))
+}
+
+fn instance_pids_from_text(text: &str) -> Vec<u32> {
+    text.lines().filter_map(|line| {
+        let line = line.trim();
+        let rest = line.strip_prefix("pid ")?;
+        rest.split_whitespace().next()?.parse().ok()
+    }).collect()
+}
+
+fn status_values() -> Vec<Value> {
+    let Ok(output) = run_unlim(&["status", "--json"]) else { return Vec::new(); };
+    if let Ok(value) = serde_json::from_slice(&output.stdout) { return vec![value]; }
+    instance_pids_from(&output).into_iter().filter_map(|pid| {
+        let pid = pid.to_string();
+        let output = run_unlim(&["status", "--instance", &pid, "--json"]).ok()?;
+        serde_json::from_slice(&output.stdout).ok()
+    }).collect()
+}
+
+fn status_mode(value: &Value) -> &str {
+    value.get("mode").and_then(Value::as_str).unwrap_or("idle")
+}
+
+fn status_connected(value: &Value) -> bool {
+    !matches!(status_mode(value), "idle" | "stopped" | "unknown" | "unavailable")
+}
+
+fn status_local_port(value: &Value) -> Option<u64> {
+    value.get("port_mappings")?.as_array()?.iter()
+        .filter(|mapping| mapping.get("proto").and_then(Value::as_str) == Some("tcp"))
+        .filter_map(|mapping| mapping.get("local_port").and_then(Value::as_u64)).min()
+}
+
+fn preferred_status(values: &[Value]) -> Option<&Value> {
+    values.iter().filter(|value| status_connected(value))
+        .min_by_key(|value| status_local_port(value).unwrap_or(u64::MAX))
+        .or_else(|| values.first())
 }
 fn is_connected() -> bool {
-    let mode = status_value().and_then(|v| v.get("mode").and_then(Value::as_str).map(str::to_owned)).unwrap_or_else(|| "idle".into());
-    !matches!(mode.as_str(), "idle" | "stopped" | "unknown" | "unavailable")
+    status_values().iter().any(status_connected)
 }
 fn platform_key() -> Result<&'static str, String> {
     match env::consts::ARCH { "x86_64" => Ok("windows_amd64"), "aarch64" => Ok("windows_arm64"), other => Err(format!("未対応のCPUです: {other}")) }
@@ -162,13 +203,15 @@ fn ensure_unlim() -> Result<String, String> { install_unlim() }
 #[tauri::command]
 fn connector_status() -> ConnectorStatus {
     let executable = find_unlim(); let installed = executable.is_some();
-    let value = installed.then(status_value).flatten();
-    let mode = value.as_ref().and_then(|v| v.get("mode")).and_then(Value::as_str).unwrap_or("idle");
-    let connected = !matches!(mode, "idle" | "stopped" | "unknown" | "unavailable");
+    let values = if installed { status_values() } else { Vec::new() };
+    let value = preferred_status(&values);
+    let mode = value.map(status_mode).unwrap_or("idle");
+    let connected = values.iter().any(status_connected);
+    let local_port = value.and_then(status_local_port).unwrap_or(25565);
     let managed = managed_unlim().ok();
     ConnectorStatus { installed, connected,
-        detail: if !installed { "Unlimを準備中".into() } else if connected { format!("接続中 ({mode})") } else { "未接続".into() },
-        local_address: "127.0.0.1:25565".into(), unlim_version: executable.as_deref().and_then(unlim_version),
+        detail: if !installed { "Unlimを準備中".into() } else if connected && values.len() > 1 { format!("接続中 ({mode} / {}重起動)", values.len()) } else if connected { format!("接続中 ({mode})") } else { "未接続".into() },
+        local_address: format!("127.0.0.1:{local_port}"), unlim_version: executable.as_deref().and_then(unlim_version),
         managed_unlim: executable.as_ref().zip(managed.as_ref()).is_some_and(|(a,b)| a == b), app_version: env!("CARGO_PKG_VERSION").into() }
 }
 
@@ -186,7 +229,18 @@ fn connect(key: String, state: tauri::State<ConnectorState>) -> Result<(), Strin
 
 #[tauri::command]
 fn disconnect(state: tauri::State<ConnectorState>) -> Result<(), String> {
-    if find_unlim().is_some() { let _ = run_unlim(&["stop"]); let _ = run_unlim(&["quit"]); }
+    if find_unlim().is_some() {
+        let initial = run_unlim(&["status", "--json"]);
+        let pids = initial.as_ref().map(instance_pids_from).unwrap_or_default();
+        if pids.is_empty() {
+            let _ = run_unlim(&["stop"]); let _ = run_unlim(&["quit"]);
+        } else {
+            for pid in pids {
+                let pid = pid.to_string();
+                let _ = run_unlim(&["quit", "--instance", &pid]);
+            }
+        }
+    }
     if let Some(mut child) = state.0.lock().map_err(|_| "内部状態を取得できません。")?.take() { let _ = child.kill(); let _ = child.wait(); }
     Ok(())
 }
@@ -202,6 +256,23 @@ pub fn run() {
 
 #[cfg(all(test, target_os = "windows"))]
 mod tests {
+    use super::*;
+
+    #[test]
+    fn parses_multiple_unlim_instances() {
+        let text = "unlim: 2 instances are running — pick one:\n  pid 15780  client  :9800   1.5.82\n  pid 22028  client  :64232  1.5.82";
+        assert_eq!(instance_pids_from_text(text), vec![15780, 22028]);
+    }
+
+    #[test]
+    fn selects_lowest_connected_local_port() {
+        let values = vec![
+            serde_json::json!({"mode":"client","port_mappings":[{"proto":"tcp","local_port":25571}]}),
+            serde_json::json!({"mode":"client","port_mappings":[{"proto":"tcp","local_port":25565}]}),
+        ];
+        assert_eq!(status_local_port(preferred_status(&values).unwrap()), Some(25565));
+    }
+
     #[test]
     fn windows_credential_round_trip() {
         let entry = keyring::Entry::new(
